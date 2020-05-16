@@ -1,5 +1,7 @@
 // Import dependencies
-import * as React from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+
 // Import components
 import TodoForm from './components/todo-form';
 import TodoList from './components/todo-list';
@@ -10,16 +12,33 @@ import './styles/styles.css';
 
 // TodoListApp component
 const TodoListApp = () => {
-  const [todos, setTodos] = React.useState<TodoInterface[]>([])
+  const [todos, setTodos] = useState<TodoInterface[]>([]);
+
+  useEffect(() => {
+    axios.get('https://us-central1-todo-firebase-1a591.cloudfunctions.net/webApi/api/v1/api/data').then((res) => {
+      let items = res.data.data
+      let todoItem = [];
+      for (let item in items) {
+        todoItem.push({
+          id: items[item].id,
+          text: items[item].task,
+          isCompleted: items[item].done
+        })
+      }
+      setTodos(todoItem);
+    })
+  }, []);
+
   // Creating new todo item
   function handleTodoCreate(todo: TodoInterface) {
     // Prepare new todos state
-    const newTodosState: TodoInterface[] = [...todos]
+    const newTodosState: TodoInterface[] = [...todos];
     // Update new todos state
-    newTodosState.push(todo)
+    newTodosState.push(todo);
     // Update todos state
-    setTodos(newTodosState)
+    setTodos(newTodosState);
   }
+
   // Update existing todo item
   function handleTodoUpdate(event: React.ChangeEvent<HTMLInputElement>, id: string) {
     // Prepare new todos state
@@ -29,6 +48,7 @@ const TodoListApp = () => {
     // Update todos state
     setTodos(newTodosState)
   }
+
   // Remove existing todo item
   function handleTodoRemove(id: string) {
     // Prepare new todos state
@@ -36,6 +56,7 @@ const TodoListApp = () => {
     // Update todos state
     setTodos(newTodosState)
   }
+
   // Check existing todo item as completed
   function handleTodoComplete(id: string) {
     // Copy current todos state
@@ -45,6 +66,7 @@ const TodoListApp = () => {
     // Update todos state
     setTodos(newTodosState)
   }
+
   // Check if todo item has title
   function handleTodoBlur(event: React.ChangeEvent<HTMLInputElement>) {
     if (event.target.value.length === 0) {
